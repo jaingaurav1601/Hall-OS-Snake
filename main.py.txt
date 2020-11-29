@@ -1,0 +1,135 @@
+import pygame as pg
+import time
+import random
+
+pg.init()
+dis_w = 800
+dis_h = 600
+dis = pg.display.set_mode((dis_w, dis_h))
+pg.display.update()
+pg.display.set_caption("Snake Game")
+
+font_style = pg.font.SysFont("bahnschrift", 25)
+score_font = pg.font.SysFont("comicsansms", 35)
+
+snake_block = 10
+
+white = (255, 255, 255)
+yellow = (255, 255, 102)
+black = (0, 0, 0)
+red = (213, 50, 80)
+green = (0, 255, 0)
+blue = (50, 153, 213)
+
+
+def snake(snake_block, snake_List):
+    for x in snake_List:
+        pg.draw.rect(dis, black, [x[0], x[1], snake_block, snake_block])
+
+
+clock = pg.time.Clock()
+
+
+def message(msg, color):
+    msg = font_style.render(msg, True, color)
+    dis.blit(msg, [dis_w / 3, dis_h / 3])
+
+
+def score(score, level):
+    value = score_font.render("Your Score: " + str(score), True, yellow)
+    dis.blit(value, [0, 0])
+    value_l = score_font.render("level : " + str(level), True, yellow)
+    dis.blit(value_l, [0, dis_h / 15])
+
+
+def game():
+    g_o = False
+    g_cl = False
+
+    x1 = dis_w / 2
+    y1 = dis_h / 2
+
+    x1c = 0
+    y1c = 0
+
+    snake_List = []
+    L_o_s = 1
+    ss = 8
+    level = 1
+
+    foodx = round(random.randrange(0, dis_w - snake_block) / 10.0) * 10.0
+    foody = round(random.randrange(0, dis_h - snake_block) / 10.0) * 10.0
+
+    while not g_o:
+
+        while g_cl == True:
+            dis.fill((255, 255, 255))
+            message("You Lost!  Press Q-Quit or R-Play Again", (255, 0, 0))
+            score(L_o_s - 1, level)
+            pg.display.update()
+
+            for e in pg.event.get():
+
+                if e.type == pg.QUIT:
+                    g_o = True
+                    g_cl = False
+                if e.type == pg.KEYDOWN:
+                    if e.key == pg.K_q:
+                        g_o = True
+                        g_cl = False
+                    if e.key == pg.K_r:
+                        game()
+
+        for e in pg.event.get():
+            if e.type == pg.QUIT:
+                g_o = True
+            if e.type == pg.KEYDOWN:
+                if e.key == pg.K_LEFT:
+                    x1c = -snake_block
+                    y1c = 0
+                elif e.key == pg.K_RIGHT:
+                    x1c = snake_block
+                    y1c = 0
+                elif e.key == pg.K_UP:
+                    y1c = -snake_block
+                    x1c = 0
+                elif e.key == pg.K_DOWN:
+                    y1c = snake_block
+                    x1c = 0
+        if x1 >= dis_w or x1 < 0 or y1 >= dis_h or y1 < 0:
+            g_o = True
+
+        x1 += x1c
+        y1 += y1c
+        dis.fill(blue)
+        pg.draw.rect(dis, red, [foodx, foody, snake_block, snake_block])
+        sh = []
+        sh.append(x1)
+        sh.append(y1)
+        snake_List.append(sh)
+        if len(snake_List) > L_o_s:
+            del snake_List[0]
+        for x in snake_List[:-1]:
+            if x == sh:
+                g_cl = True
+
+        snake(snake_block, snake_List)
+        score(L_o_s - 1, level)
+
+        if x1 == foodx and y1 == foody:
+            foodx = round(
+                random.randrange(0, dis_w - snake_block) / 10.0) * 10.0
+            foody = round(
+                random.randrange(0, dis_h - snake_block) / 10.0) * 10.0
+            L_o_s += 1
+            if ((L_o_s - 1) % 10 == 0):
+                ss += 10
+                level = (L_o_s - 1) / 10 + 1
+
+        clock.tick(ss)
+
+    pg.quit()
+    quit()
+
+
+game()
